@@ -22,11 +22,11 @@ variable "vpc_availability_zones" {
 }
 
 # VPC Public Subnets
-#variable "vpc_public_subnets" {
-#  description = "VPC Public Subnets"
-#  type = list(string)
-#  default = ["10.0.101.0/24", "10.0.102.0/24"]
-#}
+variable "vpc_public_subnets" {
+  description = "VPC Public Subnets"
+  type = list(string)
+  default = ["10.0.101.0/24", "10.0.102.0/24"]
+}
 
 # VPC Private Subnets
 variable "vpc_private_subnets" {
@@ -35,23 +35,23 @@ variable "vpc_private_subnets" {
   default = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
-# VPC Public Subnets
-variable "vpc_public_subnets" {
-  description = "VPC public Subnets"
+# VPC Database Subnets
+variable "vpc_database_subnets" {
+  description = "VPC Database Subnets"
   type = list(string)
   default = ["10.0.151.0/24", "10.0.152.0/24"]
 }
 
-# VPC Create Public Subnet Group (True / False)
-variable "vpc_create_public_subnet_group" {
-  description = "VPC Create Public Subnet Group"
+# VPC Create Database Subnet Group (True / False)
+variable "vpc_create_database_subnet_group" {
+  description = "VPC Create Database Subnet Group"
   type = bool
   default = true 
 }
 
-# VPC Create Public Subnet Route Table (True or False)
-variable "vpc_create_public_subnet_route_table" {
-  description = "VPC Create Public Subnet Route Table"
+# VPC Create Database Subnet Route Table (True or False)
+variable "vpc_create_database_subnet_route_table" {
+  description = "VPC Create Database Subnet Route Table"
   type = bool
   default = true   
 }
