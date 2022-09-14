@@ -99,8 +99,9 @@ resource "aws_cloudwatch_dashboard" "main" {
         "region": "us-east-1",
         "title": "VPN|Main Stats"
       }
-    },
-  }
+    }
+  ]    
+}
 EOF
 
 }
