@@ -6,7 +6,7 @@ module "public_sg" {
   version = "4.0.0"
 
   #name = "public-sg"  
-  name = "Network-Prod-USEAST1-SG-Public"
+  name = "Network-Prod-E1-Public-SG"
   description = "Security Group with SSH port open for everybody (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
   # Ingress Rules & CIDR Blocks
