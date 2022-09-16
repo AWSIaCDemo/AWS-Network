@@ -1,7 +1,7 @@
-variable "environment" {
-  description = "Deployment environment passed as argument or environment variable"
-  type        = string
-}
+#variable "environment" {
+#  description = "Deployment environment passed as argument or environment variable"
+#  type        = string
+#}
 
 variable "org_arn" {
   description = "The ARN of the AWS Organization this account belongs to"
