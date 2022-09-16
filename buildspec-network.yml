@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    TERRAFORM_VERSION: "1.2.5"
+    #TERRAFORM_VERSION: "1.2.5"
     #TF_COMMAND: "apply"
     TF_COMMAND: "destroy"
   parameter-store:
