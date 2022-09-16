@@ -1,5 +1,5 @@
 # Environment
-environment = "Network_Account"
+environment = ""
 # VPC Variables
 vpc_name = "vpc-us-east-1-network-act-001"
 vpc_cidr_block = "10.0.0.0/16"
