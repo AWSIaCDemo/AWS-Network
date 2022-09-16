@@ -1,10 +1,10 @@
 # Security Group for Public Load Balancer
-module "SG_Loadbalancer" {
+module "loadbalancer_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   #version = "3.18.0"
   version = "4.0.0"
 
-  #name = "loadbalancer-sg"
+  #name = "Network-Prod-USEAST1-SG-LB"
   name = "${local.name}SG-Loadbalancer"  
   description = "Security Group with HTTP open for entire Internet (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
