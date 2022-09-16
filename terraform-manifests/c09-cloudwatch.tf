@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_dashboard" "main" {
-  dashboard_name = "Network-Account-Cloudwatch-Dashboard"
+  dashboard_name = "Network-Prod-E1-CW"
   
   dashboard_body = <<EOF
 {
