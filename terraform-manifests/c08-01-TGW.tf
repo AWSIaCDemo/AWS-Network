@@ -1,296 +1,111 @@
-#################
-# Transit Gateway
-#################
-resource "aws_ec2_transit_gateway" "this" {
+provider "aws" {
+  region = local.region
+}
 
-  description                     = coalesce(var.description, var.name)
-  amazon_side_asn                 = var.amazon_side_asn
-  default_route_table_association = var.enable_default_route_table_association ? "enable" : "disable"
-  default_route_table_propagation = var.enable_default_route_table_propagation ? "enable" : "disable"
-  auto_accept_shared_attachments  = var.enable_auto_accept_shared_attachments ? "enable" : "disable"
-  vpn_ecmp_support                = var.enable_vpn_ecmp_support ? "enable" : "disable"
-  dns_support                     = var.enable_dns_support ? "enable" : "disable"
+locals {
+  name   = "ex-tgw-${replace(basename(path.cwd), "_", "-")}"
+  region = "eu-west-1"
 
-  tags = merge(
-    {
-      "Name" = format("%s", var.name)
+  tags = {
+    Example    = local.name
+    GithubRepo = "terraform-aws-eks"
+    GithubOrg  = "terraform-aws-transit-gateway"
+  }
+}
+
+################################################################################
+# Transit Gateway Module
+################################################################################
+
+module "tgw" {
+  source = "../../"
+
+  name            = local.name
+  description     = "My TGW shared with several other AWS accounts"
+  amazon_side_asn = 64532
+
+  transit_gateway_cidr_blocks = ["10.99.0.0/24"]
+
+  # When "true" there is no need for RAM resources if using multiple AWS accounts
+  enable_auto_accept_shared_attachments = true
+
+  # When "true", allows service discovery through IGMP
+  enable_mutlicast_support = false
+
+  vpc_attachments = {
+    vpc1 = {
+      vpc_id       = module.vpc1.vpc_id
+      subnet_ids   = module.vpc1.private_subnets
+      dns_support  = true
+      ipv6_support = true
+
+      transit_gateway_default_route_table_association = false
+      transit_gateway_default_route_table_propagation = false
+
+      tgw_routes = [
+        {
+          destination_cidr_block = "30.0.0.0/16"
+        },
+        {
+          blackhole              = true
+          destination_cidr_block = "0.0.0.0/0"
+        }
+      ]
     },
-    var.tags
-  )
-}
+    vpc2 = {
+      vpc_id     = module.vpc2.vpc_id
+      subnet_ids = module.vpc2.private_subnets
 
-#########################
-# Route table and routes
-#########################
-resource "aws_ec2_transit_gateway_route_table" "this" {
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-
-  tags = merge(
-    {
-      "Name" = format("%s", var.name)
+      tgw_routes = [
+        {
+          destination_cidr_block = "50.0.0.0/16"
+        },
+        {
+          blackhole              = true
+          destination_cidr_block = "10.10.10.10/32"
+        }
+      ]
     },
-    var.tags
-  )
+  }
+
+  ram_allow_external_principals = true
+  ram_principals                = [307990089504]
+
+  tags = local.tags
 }
 
+################################################################################
+# Supporting resources
+################################################################################
 
-// VPC attachment routes
-resource "aws_ec2_transit_gateway_route" "this" {
+module "vpc1" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 3.0"
 
-  destination_cidr_block = var.vpc_attachments["vpc0"].vpc_cidr
+  name = "${local.name}-vpc1"
+  cidr = "10.10.0.0/16"
 
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc0.id
+  azs             = ["${local.region}a", "${local.region}b", "${local.region}c"]
+  private_subnets = ["10.10.1.0/24", "10.10.2.0/24", "10.10.3.0/24"]
+
+  enable_ipv6                                    = true
+  private_subnet_assign_ipv6_address_on_creation = true
+  private_subnet_ipv6_prefixes                   = [0, 1, 2]
+
+  tags = local.tags
 }
 
-resource "aws_ec2_transit_gateway_route" "this_vpc1" {
+module "vpc2" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 3.0"
 
-  destination_cidr_block = var.vpc_attachments["vpc1"].vpc_cidr
+  name = "${local.name}-vpc2"
+  cidr = "10.20.0.0/16"
 
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc1.id
-}
+  azs             = ["${local.region}a", "${local.region}b", "${local.region}c"]
+  private_subnets = ["10.20.1.0/24", "10.20.2.0/24", "10.20.3.0/24"]
 
-resource "aws_ec2_transit_gateway_route" "this_vpc2" {
+  enable_ipv6 = false
 
-  destination_cidr_block = var.vpc_attachments["vpc2"].vpc_cidr
-
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc2.id
-}
-
-resource "aws_ec2_transit_gateway_route" "this_vpc3" {
-
-  destination_cidr_block = var.vpc_attachments["vpc3"].vpc_cidr
-
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc3.id
-}
-
-resource "aws_ec2_transit_gateway_route" "this_vpc4" {
-
-  destination_cidr_block = var.vpc_attachments["vpc4"].vpc_cidr
-
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc4.id
-}
-
-resource "aws_ec2_transit_gateway_route" "this_vpc5" {
-
-  destination_cidr_block = var.vpc_attachments["vpc5"].vpc_cidr
-
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc5.id
-}
-
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc0.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc0.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this_vpc1" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc1.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this_vpc1" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc1.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this_vpc2" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc2.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this_vpc2" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc2.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this_vpc3" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc3.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this_vpc3" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc3.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this_vpc4" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc4.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this_vpc4" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc4.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-
-resource "aws_ec2_transit_gateway_route_table_association" "this_vpc5" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc5.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "this_vpc5" {
-
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this_vpc5.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.this.id
-}
-
-###########################################################
-# VPC Attachments, route table association and propagation
-###########################################################
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc0" {
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc0"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc0"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc0"].name)
-    },
-    var.tags
-  )
-}
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc1" {
-
-  provider = aws.vpc1
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc1"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc1"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc1"].name)
-    },
-    var.tags
-  )
-}
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc2" {
-
-  provider = aws.vpc2
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc2"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc2"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc2"].name)
-    },
-    var.tags
-  )
-}
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc3" {
-
-  provider = aws.vpc3
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc3"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc3"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc3"].name)
-    },
-    var.tags
-  )
-}
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc4" {
-
-  provider = aws.vpc4
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc4"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc4"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc4"].name)
-    },
-    var.tags
-  )
-}
-
-
-resource "aws_ec2_transit_gateway_vpc_attachment" "this_vpc5" {
-
-  provider = aws.vpc5
-
-  transit_gateway_id = aws_ec2_transit_gateway.this.id
-  vpc_id             = var.vpc_attachments["vpc5"].vpc_id
-  subnet_ids         = var.vpc_attachments["vpc5"].subnet_ids
-
-  dns_support                                     = "enable"
-  ipv6_support                                    = "enable"
-  transit_gateway_default_route_table_association = false
-  transit_gateway_default_route_table_propagation = false
-
-  tags = merge(
-    {
-      Name = format("%s-%s", var.name, var.vpc_attachments["vpc5"].name)
-    },
-    var.tags
-  )
+  tags = local.tags
 }
