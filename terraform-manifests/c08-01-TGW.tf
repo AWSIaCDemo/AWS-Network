@@ -1,9 +1,9 @@
-provider "aws" {
+#provider "aws" {
   region = local.region
 }
 
 # This provider is required for attachment only installation in another AWS Account
-provider "aws" {
+#provider "aws" {
   region = local.region
   alias  = "peer"
 }
