@@ -1,12 +1,12 @@
 # AWS EC2 Security Group Terraform Module
 # Security Group for Private Subnet
-module "SG_Private" {
+module "private_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   #version = "3.18.0"
   version = "4.0.0"
   
   #name = "private-sg"
-  name = "${local.name}SG-Private"  
+  name = "Network-Prod-USEAST1-SG-Private"  
   description = "Security Group with HTTP & SSH port open for entire VPC Block (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
   # Ingress Rules & CIDR Blocks
