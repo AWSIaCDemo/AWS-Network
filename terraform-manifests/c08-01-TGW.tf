@@ -1,4 +1,4 @@
-resource "aws_ec2_transit_gateway" "tgw-network-001" {
+resource "aws_ec2_transit_gateway" "Network-Prod-E1-TGW" {
   description                     = "Network-transit-gateway"
   amazon_side_asn                 = 64512
   auto_accept_shared_attachments  = "disable"
