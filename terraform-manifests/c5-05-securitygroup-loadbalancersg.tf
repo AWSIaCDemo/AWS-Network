@@ -5,7 +5,7 @@ module "loadbalancer_sg" {
   version = "4.0.0"
 
   #name = "loadbalancer-sg"
-  name = "sg-loadbalancer-useast1-001"  
+  name = "${local.name}-loadbalancer-sg"  
   description = "Security Group with HTTP open for entire Internet (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
   # Ingress Rules & CIDR Blocks
