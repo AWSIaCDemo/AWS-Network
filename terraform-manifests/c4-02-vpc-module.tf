@@ -5,7 +5,7 @@ module "vpc" {
   version = "3.0.0"
 
   # VPC Basic Details
-  name = "${local.name}${var.vpc_name}"
+  name = "{var.vpc_name}"
   cidr = var.vpc_cidr_block
   azs             = var.vpc_availability_zones
   public_subnets  = var.vpc_public_subnets
