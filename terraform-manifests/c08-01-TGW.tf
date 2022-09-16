@@ -1,18 +1,3 @@
-provider "aws" {
-  region = local.region
-}
-
-locals {
-  name   = "ex-tgw-${replace(basename(path.cwd), "_", "-")}"
-  region = "eu-west-1"
-
-  tags = {
-    Example    = local.name
-    GithubRepo = "terraform-aws-eks"
-    GithubOrg  = "terraform-aws-transit-gateway"
-  }
-}
-
 ################################################################################
 # Transit Gateway Module
 ################################################################################
@@ -24,13 +9,8 @@ module "tgw" {
   description     = "My TGW shared with several other AWS accounts"
   amazon_side_asn = 64532
 
-  transit_gateway_cidr_blocks = ["10.99.0.0/24"]
-
   # When "true" there is no need for RAM resources if using multiple AWS accounts
   enable_auto_accept_shared_attachments = true
-
-  # When "true", allows service discovery through IGMP
-  enable_mutlicast_support = false
 
   vpc_attachments = {
     vpc1 = {
@@ -74,6 +54,53 @@ module "tgw" {
   tags = local.tags
 }
 
+module "tgw_peer" {
+  # This is optional and connects to another account. Meaning you need to be authenticated with 2 separate AWS Accounts
+  source = "../../"
+
+  providers = {
+    aws = aws.peer
+  }
+
+  name            = "${local.name}-peer"
+  description     = "My TGW shared with several other AWS accounts"
+  amazon_side_asn = 64532
+
+  create_tgw             = false
+  share_tgw              = true
+  ram_resource_share_arn = module.tgw.ram_resource_share_id
+  # When "true" there is no need for RAM resources if using multiple AWS accounts
+  enable_auto_accept_shared_attachments = true
+
+  vpc_attachments = {
+    vpc1 = {
+      tgw_id       = module.tgw.ec2_transit_gateway_id
+      vpc_id       = module.vpc1.vpc_id
+      subnet_ids   = module.vpc1.private_subnets
+      dns_support  = true
+      ipv6_support = true
+
+      transit_gateway_default_route_table_association = false
+      transit_gateway_default_route_table_propagation = false
+
+      tgw_routes = [
+        {
+          destination_cidr_block = "30.0.0.0/16"
+        },
+        {
+          blackhole              = true
+          destination_cidr_block = "0.0.0.0/0"
+        }
+      ]
+    },
+  }
+
+  ram_allow_external_principals = true
+  ram_principals                = [307990089504]
+
+  tags = local.tags
+}
+
 ################################################################################
 # Supporting resources
 ################################################################################
@@ -95,9 +122,14 @@ module "vpc1" {
   tags = local.tags
 }
 
+
 module "vpc2" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 3.0"
+
+  providers = {
+    aws = aws.peer
+  }
 
   name = "${local.name}-vpc2"
   cidr = "10.20.0.0/16"
