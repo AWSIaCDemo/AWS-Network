@@ -1,3 +1,24 @@
+provider "aws" {
+  region = local.region
+}
+
+# This provider is required for attachment only installation in another AWS Account
+provider "aws" {
+  region = local.region
+  alias  = "peer"
+}
+
+locals {
+  name   = "ex-tgw-${replace(basename(path.cwd), "_", "-")}"
+  region = "eu-west-1"
+
+  tags = {
+    Example    = local.name
+    GithubRepo = "terraform-aws-eks"
+    GithubOrg  = "terraform-aws-transit-gateway"
+  }
+}
+
 ################################################################################
 # Transit Gateway Module
 ################################################################################
