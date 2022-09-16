@@ -6,7 +6,7 @@ module "private_sg" {
   version = "4.0.0"
   
   #name = "private-sg"
-  name = "Network-Prod-USEAST1-SG-Private"  
+  name = "Network-Prod-E1-Private-SG"  
   description = "Security Group with HTTP & SSH port open for entire VPC Block (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
   # Ingress Rules & CIDR Blocks
