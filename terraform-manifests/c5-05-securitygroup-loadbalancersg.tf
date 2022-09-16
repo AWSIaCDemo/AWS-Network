@@ -4,8 +4,8 @@ module "loadbalancer_sg" {
   #version = "3.18.0"
   version = "4.0.0"
 
-  #name = "Network-Prod-USEAST1-SG-LB"
-  name = "${local.name}SG-Loadbalancer"  
+  #name = "Network-Prod-E1-LB-SG"
+  name = "Network-Prod-E1-LB-SG"  
   description = "Security Group with HTTP open for entire Internet (IPv4 CIDR), egress ports are all world open"
   vpc_id = module.vpc.vpc_id
   # Ingress Rules & CIDR Blocks
