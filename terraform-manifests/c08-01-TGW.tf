@@ -37,8 +37,6 @@ resource "aws_ec2_transit_gateway" "this" {
   dns_support                     = var.enable_dns_support ? "enable" : "disable"
   #transit_gateway_cidr_blocks     = var.transit_gateway_cidr_blocks
 
-  }
-
   tags = merge(
     var.tags,
     { Name = var.name },
