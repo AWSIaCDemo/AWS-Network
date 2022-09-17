@@ -17,6 +17,6 @@ resource "aws_ram_resource_share" "main" {
   allow_external_principals = false
 
   tags = {
-    Name = "Master-TGW-ram-share"
+    Name = "Network-Prod-E1-TGW-RAM"
   }
 }
