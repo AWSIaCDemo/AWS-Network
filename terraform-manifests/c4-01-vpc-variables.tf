@@ -43,18 +43,18 @@ variable "network_prod_db_e1_sbnt" {
 }
 
 # VPC Create Database Subnet Group (True / False)
-variable "vpc_create_database_subnet_group" {
-  description = "VPC Create Database Subnet Group"
-  type = bool
-  default = true 
-}
+#variable "vpc_create_database_subnet_group" {
+#  description = "VPC Create Database Subnet Group"
+#  type = bool
+#  default = true 
+#}
 
 # VPC Create Database Subnet Route Table (True or False)
-variable "vpc_create_database_subnet_route_table" {
-  description = "VPC Create Database Subnet Route Table"
-  type = bool
-  default = true   
-}
+#variable "vpc_create_database_subnet_route_table" {
+#  description = "VPC Create Database Subnet Route Table"
+#  type = bool
+#  default = true   
+#}
 
   
 # VPC Enable NAT Gateway (True or False) 
@@ -62,7 +62,11 @@ variable "vpc_enable_nat_gateway" {
   description = "Enable NAT Gateways for Private Subnets Outbound Communication"
   type = bool
   default = true  
-}
+  
+tags = {
+    Name = "Network-Prod-E1-IGW"
+  }
+ }
 
 # VPC Single NAT Gateway (True or False)
 variable "vpc_single_nat_gateway" {
