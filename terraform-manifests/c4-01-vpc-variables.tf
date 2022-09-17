@@ -22,21 +22,21 @@ variable "vpc_availability_zones" {
 }
 
 # VPC Public Subnets
-variable "vpc_public_subnets" {
+variable "network_prod_public_e1_sbnt" {
   description = "VPC Public Subnets"
   type = list(string)
   default = ["10.0.101.0/24", "10.0.102.0/24"]
 }
 
 # VPC Private Subnets
-variable "vpc_private_subnets" {
+variable "network_prod_private_e1_sbnt" {
   description = "VPC Private Subnets"
   type = list(string)
   default = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
 # VPC Database Subnets
-variable "vpc_database_subnets" {
+variable "network_prod_db_e1_sbnt" {
   description = "VPC Database Subnets"
   type = list(string)
   default = ["10.0.151.0/24", "10.0.152.0/24"]
