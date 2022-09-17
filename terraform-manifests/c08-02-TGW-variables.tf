@@ -25,11 +25,11 @@ variable "cidr" {
 variable "inspection_attachment" {
   description = "Inspection VPC attachment for default route"
   type        = string
-  default     = {}
+  default     = []
 }
 
 variable "tgw_route_tables" {
   description = "List of route tables to create for the transit gateway"
   type        = list(string)
-  default     = {}
+  default     = []
 }
