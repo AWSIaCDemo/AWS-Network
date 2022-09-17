@@ -62,11 +62,7 @@ variable "vpc_enable_nat_gateway" {
   description = "Enable NAT Gateways for Private Subnets Outbound Communication"
   type = bool
   default = true  
-  
-tags = {
-    Name = "Network-Prod-E1-IGW"
-  }
- }
+}
 
 # VPC Single NAT Gateway (True or False)
 variable "vpc_single_nat_gateway" {
