@@ -40,7 +40,7 @@ resource "aws_ec2_transit_gateway_route_table" "org_tgw" {
 
 resource "aws_ec2_transit_gateway_route" "blackhole_route" {
   for_each                       = aws_ec2_transit_gateway_route_table.org_tgw
-  destination_cidr_block         = var.cidr
+  destination_cidr_block         = "10.0.104.0/24"
   blackhole                      = true
   transit_gateway_route_table_id = each.value.id
 }
